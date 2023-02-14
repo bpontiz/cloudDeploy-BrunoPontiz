@@ -1,6 +1,4 @@
 import { Router } from 'express';
-import passport from 'passport';
-import { fork } from 'child_process';
 import calculate from '../calculate.js';
 import compression from 'compression';
 import os from 'os';
@@ -8,20 +6,32 @@ import logger from '../loggers/log4.js';
 
 const apiRoutes = Router();
 
-const isAuth = (req, res, next) => {
-    if (req.isAuthenticated()) {
-        next();
-    } else {
-        res.redirect('/login')
-    }
-};
+const users = [];
 
-apiRoutes.get('/', isAuth, (req, res) => {
-    const { url, method } = req;
+// const isAuth = (req, res, next) => {
+//     if (req.isAuthenticated()) {
+//         next();
+//     } else {
+//         res.redirect('/login')
+//     }
+// };
+
+apiRoutes.get('/', (req, res) => {
+    // const { url, method } = req.body;
     
-    logger.info(`Redirecting to ${url} with method ${method}.`)
+    // logger.info(`Redirecting to ${url} with method ${method}.`)
 
-    res.redirect('/datos');
+    if (req.session.name) {
+
+        res.redirect('/datos');
+
+    } else {
+
+        res.redirect('/login');
+
+    }
+
+
 });
 
 apiRoutes.get('/register', (req, res) => {
@@ -32,43 +42,125 @@ apiRoutes.get('/register', (req, res) => {
     res.sendFile('register.html', {root: 'views'});
 });
 
-apiRoutes.post('/register', passport.authenticate('register', { failureRedirect: '/failregister', successRedirect: '/' })
+apiRoutes.post('/register', (req, res) => {
+    const {email, name, password} = req.body;
+    const user = users.find(u => u.name == name);
+
+    if (user) {
+
+        return res.render('register-error');
+
+    } else {
+
+        users.push({name, email, password});
+
+        return res.redirect('login-ok');
+
+    }
+
+}
 );
 
-apiRoutes.get('/failregister', (req, res) => {
-    const { url, method } = req;
+// apiRoutes.get('/failregister', (req, res) => {
+//     const { url, method } = req;
 
-    logger.info(`Redirecting to ${url} with method ${method}.`);
+//     logger.info(`Redirecting to ${url} with method ${method}.`);
 
-    res.sendFile('register-error.html', {root: 'views'});
-});
+//     res.sendFile('register-error.html', {root: 'views'});
+// });
 
 apiRoutes.get('/login', (req, res) => {
-    const { url, method } = req;
+    // const { url, method } = req;
 
-    logger.info(`Redirecting to ${url} with method ${method}.`);
+    // logger.info(`Redirecting to ${url} with method ${method}.`);
 
     res.sendFile('login.html', {root: 'views'});
 });
 
-apiRoutes.post('/login', passport.authenticate('login', { failureRedirect: '/faillogin', successRedirect: '/datos' })
-);
+apiRoutes.post('/login', (req, res) => {
+    const {name, password} = req.body;
 
-apiRoutes.get('/faillogin', (req, res) => {
-    const { url, method } = req;
+    const user = users.find(u => u.name == name && u.password == password);
 
-    logger.info(`Redirecting to ${url} with method ${method}.`);
+    if (!user) {
 
-    res.sendFile('login-error.html', {root: 'views'});
+        return res.render('login-error');
+
+    } else {
+
+        req.session.name = name;
+
+        req.session.contador = 0;
+        
+        res.redirect('data');
+
+    }
+});
+
+// apiRoutes.get('/faillogin', (req, res) => {
+//     const { url, method } = req;
+
+//     logger.info(`Redirecting to ${url} with method ${method}.`);
+
+//     res.sendFile('login-error.html', {root: 'views'});
+// })
+
+apiRoutes.get('/login-ok', (req, res) => {
+
+    res.sendFile('login-ok.html', {root: 'views'});
+
 })
+
+apiRoutes.post('/login-ok', (req, res) => {
+
+    const {name, password} = req.body;
+
+    const user = users.find(u => u.name == name && u.password == password);
+
+    if (!user) {
+
+        return res.render('login-error');
+
+    } else {
+
+        req.session.name = name;
+
+        req.session.contador = 0;
+        
+        res.redirect('data');
+
+    }
+
+})
+
+
+apiRoutes.get('/data', (req, res) => {
+
+    if (req.session.name) {
+
+        req.session.contador++;
+
+        return res.render('data',
+            {
+                data: users.find(u => u.name == req.session.name),
+                contador: req.session.contador
+            });
+
+    } else {
+
+        return res.redirect('/login');
+
+    }
+});
 
 apiRoutes.get('/logout', (req, res) => {
     const { url, method } = req;
 
     logger.info(`Redirecting to ${url} with method ${method}.`);
 
-    req.logout();
-    res.redirect('/');
+    req.session.destroy(err => {
+        res.redirect('/login')
+    });
 });
 
 apiRoutes.get('/info', (req, res) => {
@@ -134,15 +226,6 @@ apiRoutes.get('/api/randoms/:number', (req, res) => {
     const calculation = calculate(reqNumber);
 
     console.log(calculation);
-    
-    //! CONSIGNA : DESACTIVAR CHILD_PROCESS DE RUTA RANDOMS
-    // const forkCalculate = fork('/Users/bpont/Documents/Coderhouse/M4-Backend/LoggersGZIP-BrunoPontiz/calculate.js');
-
-    // forkCalculate.send('start');
-
-    // forkCalculate.on('message', obj => {
-    //     res.send("Obj: ", obj);
-    // })
 
 });
 

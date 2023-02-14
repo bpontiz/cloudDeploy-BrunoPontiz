@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Sign Up</title>
+    <title>Login</title>
 
     <meta charset="UTF-8">
 
@@ -15,9 +15,13 @@
 <body>
     <section>
         <div>
-            <h2>Sign Up</h2>
+            <h2>Login</h2>
 
-            <form action="/register" method="post" role="form">
+            <p>You have succesfully registered.</p>
+
+            <p>Please login to access your data.</p>
+
+            <form action="/login" method="post" role="form">
                 <div>
                     <input class="" type="text" name="name" placeholder="Name" autocomplete="off" required>
                 </div>
@@ -31,14 +35,14 @@
                 <div>
 
                 <div>
-                    <input class="" type="submit" value="Register">
+                    <input class="" type="submit" value="Login">
                 </div>
             </form>
             
             <div>
-                <p class="">Already have an account ?</p>
-                <button class="" onclick="location.href = '/login'">
-                    Login
+                <p class="">Do not have an account ?</p>
+                <button class="" onclick="location.href = '/register'">
+                    Sign Up
                 </button>
             </div>
         </div>
