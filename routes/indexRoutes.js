@@ -8,18 +8,10 @@ const apiRoutes = Router();
 
 const users = [];
 
-// const isAuth = (req, res, next) => {
-//     if (req.isAuthenticated()) {
-//         next();
-//     } else {
-//         res.redirect('/login')
-//     }
-// };
-
 apiRoutes.get('/', (req, res) => {
-    // const { url, method } = req.body;
+    const { url, method } = req.body;
     
-    // logger.info(`Redirecting to ${url} with method ${method}.`)
+    logger.info(`Redirecting to ${url} with method ${method}.`)
 
     if (req.session.name) {
 
@@ -61,18 +53,10 @@ apiRoutes.post('/register', (req, res) => {
 }
 );
 
-// apiRoutes.get('/failregister', (req, res) => {
-//     const { url, method } = req;
-
-//     logger.info(`Redirecting to ${url} with method ${method}.`);
-
-//     res.sendFile('register-error.html', {root: 'views'});
-// });
-
 apiRoutes.get('/login', (req, res) => {
-    // const { url, method } = req;
+    const { url, method } = req;
 
-    // logger.info(`Redirecting to ${url} with method ${method}.`);
+    logger.info(`Redirecting to ${url} with method ${method}.`);
 
     res.sendFile('login.html', {root: 'views'});
 });
@@ -96,14 +80,6 @@ apiRoutes.post('/login', (req, res) => {
 
     }
 });
-
-// apiRoutes.get('/faillogin', (req, res) => {
-//     const { url, method } = req;
-
-//     logger.info(`Redirecting to ${url} with method ${method}.`);
-
-//     res.sendFile('login-error.html', {root: 'views'});
-// })
 
 apiRoutes.get('/login-ok', (req, res) => {
 
